@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soccer Clicker</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: url('https://i.imgur.com/BVxv8P5.png') repeat; /* cartoon grass texture */
+        background-size: 200px;
+        text-align: center;
+        color: white;
+    }
+    h1 {
+        margin-top: 10px;
+        font-size: 2em;
+        text-shadow: 2px 2px 4px #000;
+    }
+    #score {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+        font-weight: bold;
+        background: rgba(0,0,0,0.5);
+        display: inline-block;
+        padding: 8px 15px;
+        border-radius: 10px;
+    }
+    #soccer-ball {
+        width: 200px;
+        cursor: pointer;
+        margin: 20px 0;
+        border-radius: 50%;
+        box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+    .shop {
+        background: rgba(0,0,0,0.6);
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 400px;
+        margin: auto;
+    }
+    .upgrade {
+        background: rgba(255,255,255,0.1);
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .upgrade:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    .upgrade h3 {
+        margin: 0;
+        font-size: 1.2em;
+    }
+    .upgrade p {
+        margin: 5px 0 0;
+        font-size: 0.9em;
+    }
+    #tutorial {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        text-align: center;
+        padding-top: 20%;
+        z-index: 1000;
+    }
+    #tutorial button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1.2em;
+        background: green;
+        border: none;
+        color: white;
+        border-radius: 5px;
+    }
+</style>
+</head>
+<body>
+
+<h1>⚽ Soccer Clicker ⚽</h1>
+<div id="score">Goals: 0</div>
+<br>
+<img id="soccer-ball" src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg" alt="Soccer Ball">
+
+<div class="shop" id="shop">
+    <div class="upgrade" onclick="buyUpgrade('player')">
+        <h3>Buy Player (+1 per click)</h3>
+        <p>Cost: <span id="cost-player">10</span> goals</p>
+    </div>
+    <div class="upgrade" onclick="buyUpgrade('coach')">
+        <h3>Hire Coach (+1 per second)</h3>
+        <p>Cost: <span id="cost-coach">50</span> goals</p>
+    </div>
+</div>
+
+<div id="tutorial">
+    <h2>Welcome to Soccer Clicker!</h2>
+    <p>1️⃣ Tap the soccer ball to score goals.</p>
+    <p>2️⃣ Buy upgrades to earn more goals.</p>
+    <p>3️⃣ Prestige to reset and gain bonuses.</p>
+    <button onclick="closeTutorial()">Got it!</button>
+</div>
+
+<script>
+let goals = 0;
+let gpc = 1; // goals per click
+let gps = 0; // goals per second
+
+let upgrades = {
+    player: { cost: 10, gpcBoost: 1, gpsBoost: 0 },
+    coach: { cost: 50, gpcBoost: 0, gpsBoost: 1 }
+};
+
+// Load save
+if(localStorage.getItem('soccerSave')) {
+    let save = JSON.parse(localStorage.getItem('soccerSave'));
+    goals = save.goals || 0;
+    gpc = save.gpc || 1;
+    gps = save.gps || 0;
+    upgrades = save.upgrades || upgrades;
+} else {
+    document.getElementById('tutorial').style.display = 'block';
+}
+
+function closeTutorial() {
+    document.getElementById('tutorial').style.display = 'none';
+}
+
+function updateDisplay() {
+    document.getElementById('score').innerText = "Goals: " + Math.floor(goals);
+    document.getElementById('cost-player').innerText = upgrades.player.cost;
+    document.getElementById('cost-coach').innerText = upgrades.coach.cost;
+}
+
+document.getElementById('soccer-ball').addEventListener('click', () => {
+    goals += gpc;
+    updateDisplay();
+});
+
+function buyUpgrade(type) {
+    if(goals >= upgrades[type].cost) {
+        goals -= upgrades[type].cost;
+        gpc += upgrades[type].gpcBoost;
+        gps += upgrades[type].gpsBoost;
+        upgrades[type].cost = Math.floor(upgrades[type].cost * 1.5);
+        updateDisplay();
+    }
+}
+
+setInterval(() => {
+    goals += gps;
+    updateDisplay();
+}, 1000);
+
+setInterval(() => {
+    localStorage.setItem('soccerSave', JSON.stringify({ goals, gpc, gps, upgrades }));
+}, 5000);
+
+updateDisplay();
+</script>
+
+</body>
+</html>
